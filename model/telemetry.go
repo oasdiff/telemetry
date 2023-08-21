@@ -7,6 +7,8 @@ import (
 
 	machine "github.com/denisbrodbeck/machineid"
 	"github.com/google/uuid"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"golang.org/x/exp/slog"
 )
 
@@ -23,7 +25,29 @@ type Telemetry struct {
 	// Duration           int64
 }
 
-func NewTelemetry(appVersion string, cmd string, args []string, flags map[string]string) Telemetry {
+func FromCommand(cmd *cobra.Command) *Telemetry {
+
+	subCommandName := ""
+	args := []string{}
+	flagNameToValue := make(map[string]string)
+
+	for _, currSubCommand := range cmd.Commands() {
+		subCommandName = currSubCommand.CalledAs()
+		if subCommandName != "" {
+			currSubCommand.Flags().Visit(func(flag *pflag.Flag) {
+				flagNameToValue[flag.Name] = flag.Value.String()
+			})
+			for _, currArg := range currSubCommand.Flags().Args() {
+				args = append(args, currArg)
+			}
+			break
+		}
+	}
+
+	return newTelemetry(cmd.Version, subCommandName, args, flagNameToValue)
+}
+
+func newTelemetry(appVersion string, cmd string, args []string, flags map[string]string) *Telemetry {
 
 	machineId, err := machine.ID()
 	if err != nil {
@@ -31,7 +55,7 @@ func NewTelemetry(appVersion string, cmd string, args []string, flags map[string
 		machineId = "na"
 	}
 
-	return Telemetry{
+	return &Telemetry{
 		Id:                 uuid.NewString(),
 		Time:               time.Now().UnixMilli(),
 		MachineId:          machineId,
@@ -46,7 +70,7 @@ func NewTelemetry(appVersion string, cmd string, args []string, flags map[string
 
 func getPlatform() string {
 
-	if res := os.Getenv("Platform"); res != "" {
+	if res := os.Getenv("PLATFORM"); res != "" {
 		return res
 	}
 
