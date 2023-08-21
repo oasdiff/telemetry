@@ -12,6 +12,11 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+const (
+	EnvNoTelemetry = "OASDIFF_NO_TELEMETRY"
+	DefaultTimeout = time.Millisecond * 700
+)
+
 type Telemetry struct {
 	Id                 string
 	Time               int64
