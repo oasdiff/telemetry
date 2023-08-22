@@ -6,13 +6,11 @@ import (
 	"time"
 
 	machine "github.com/denisbrodbeck/machineid"
-	"github.com/google/uuid"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"golang.org/x/exp/slog"
 )
 
 const (
+	Application    = "oasdiff"
 	EnvNoTelemetry = "OASDIFF_NO_TELEMETRY"
 	DefaultTimeout = time.Millisecond * 700
 )
@@ -26,45 +24,24 @@ type Telemetry struct {
 	Command            string
 	Args               []string
 	Flags              map[string]string
+	Application        string
 	ApplicationVersion string
 	// Duration           int64
 }
 
-func FromCommand(cmd *cobra.Command) *Telemetry {
+func NewTelemetry(app string, appVersion string, cmd string, args []string, flags map[string]string) *Telemetry {
 
-	subCommandName := ""
-	args := []string{}
-	flagNameToValue := make(map[string]string)
-
-	for _, currSubCommand := range cmd.Commands() {
-		subCommandName = currSubCommand.CalledAs()
-		if subCommandName != "" {
-			currSubCommand.Flags().Visit(func(flag *pflag.Flag) {
-				flagNameToValue[flag.Name] = flag.Value.String()
-			})
-			for _, currArg := range currSubCommand.Flags().Args() {
-				args = append(args, currArg)
-			}
-			break
-		}
-	}
-
-	return newTelemetry(cmd.Version, subCommandName, args, flagNameToValue)
-}
-
-func newTelemetry(appVersion string, cmd string, args []string, flags map[string]string) *Telemetry {
-
-	machineId, err := machine.ID()
+	machineId, err := machine.ProtectedID(app)
 	if err != nil {
 		slog.Debug("failed to get machine ID", "error", err)
 		machineId = "na"
 	}
 
 	return &Telemetry{
-		Id:                 uuid.NewString(),
 		Time:               time.Now().UnixMilli(),
-		MachineId:          machineId,
+		Application:        app,
 		ApplicationVersion: appVersion,
+		MachineId:          machineId,
 		Runtime:            runtime.GOOS,
 		Platform:           getPlatform(),
 		Command:            cmd,

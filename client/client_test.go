@@ -1,9 +1,14 @@
-package model_test
+package client_test
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/oasdiff/telemetry/client"
 	"github.com/oasdiff/telemetry/model"
+	"github.com/oasdiff/telemetry/server"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 )
@@ -18,19 +23,17 @@ type DiffFlags struct {
 	stripPrefixRevision      string
 	matchPath                string
 	filterExtension          string
-	format                   string
 	failOnDiff               bool
 	circularReferenceCounter int
 	includePathParams        bool
-	excludeElements          []string
 }
 
-func TestTelemetryFromCommand(t *testing.T) {
+func TestSend(t *testing.T) {
 
 	const subCommand, version = "diff", "v1.2.3"
 
 	cmd := &cobra.Command{
-		Use:   "oasdiff",
+		Use:   model.Application,
 		Short: "OpenAPI specification diff",
 	}
 	cmd.Version = version
@@ -38,18 +41,26 @@ func TestTelemetryFromCommand(t *testing.T) {
 	cmd.AddCommand(getDiffCmd())
 	require.NoError(t, cmd.Execute())
 
-	telemetry := model.FromCommand(cmd)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusCreated)
 
-	require.NotEmpty(t, telemetry.Id)
-	require.True(t, telemetry.Time > 0)
-	require.NotEmpty(t, telemetry.MachineId)
-	require.NotEmpty(t, telemetry.Runtime)
-	require.NotEmpty(t, telemetry.Platform)
-	require.Equal(t, subCommand, telemetry.Command)
-	require.Equal(t, version, telemetry.ApplicationVersion)
-	require.Len(t, telemetry.Args, 2)
-	require.Len(t, telemetry.Flags, 1)
-	require.Equal(t, "true", telemetry.Flags["composed"])
+		var events map[string][]*model.Telemetry
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&events))
+		telemetry := events[server.KeyEvents][0]
+		require.True(t, telemetry.Time > 0)
+		require.NotEmpty(t, telemetry.MachineId)
+		require.NotEmpty(t, telemetry.Runtime)
+		require.NotEmpty(t, telemetry.Platform)
+		require.Equal(t, subCommand, telemetry.Command)
+		require.Equal(t, version, telemetry.ApplicationVersion)
+		require.Len(t, telemetry.Args, 2)
+		require.Len(t, telemetry.Flags, 1)
+		require.Equal(t, "true", telemetry.Flags["composed"])
+	}))
+
+	c := client.NewCollector()
+	c.EventsUrl = server.URL
+	c.Send(cmd)
 }
 
 func getDiffCmd() *cobra.Command {
