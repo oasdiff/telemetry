@@ -26,7 +26,7 @@ var (
 func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
-	router.POST(KeyEvents, func(ctx *gin.Context) {
+	router.POST(fmt.Sprintf("/%s", KeyEvents), func(ctx *gin.Context) {
 
 		var events map[string][]*model.Telemetry
 		if err := ctx.BindJSON(&events); err != nil {
