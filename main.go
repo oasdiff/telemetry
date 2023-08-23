@@ -36,9 +36,9 @@ func setupRouter() *gin.Engine {
 			currEvent.Id = uuid.NewString()
 		}
 
-		payload, err := json.MarshalIndent(events, "", "    ")
+		payload, err := json.Marshal(events)
 		if err != nil {
-			slog.Error("failed to 'MarshalIndent'", "events", len(events), "error", err)
+			slog.Error("failed to 'Marshal'", "events", len(events), "error", err)
 			ctx.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}

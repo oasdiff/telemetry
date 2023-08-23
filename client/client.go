@@ -51,7 +51,8 @@ func fromCommand(cmd *cobra.Command) *model.Telemetry {
 		}
 	}
 
-	return model.NewTelemetry(fmt.Sprintf("%s-cli", model.Application), cmd.Version, subCommandName, args, flagNameToValue)
+	return model.NewTelemetry(fmt.Sprintf("%s-cli", model.Application),
+		cmd.Version, subCommandName, args, flagNameToValue)
 }
 
 func send(url string, t *model.Telemetry) error {

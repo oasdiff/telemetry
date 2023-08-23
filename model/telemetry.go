@@ -17,16 +17,16 @@ const (
 )
 
 type Telemetry struct {
-	Id                 string
-	Time               int64
-	MachineId          string
-	Runtime            string // darwin/windows
-	Platform           string // docker/github-action
-	Command            string
-	Args               []string
-	Flags              map[string]string
-	Application        string
-	ApplicationVersion string
+	Id                 string            `json:"id"`
+	Time               int64             `json:"time"`
+	MachineId          string            `json:"machine_id"`
+	Runtime            string            `json:"runtime"`  // darwin/windows
+	Platform           string            `json:"platform"` // docker/github-action
+	Command            string            `json:"command"`
+	Args               []string          `json:"args"`
+	Flags              map[string]string `json:"flags"`
+	Application        string            `json:"application"`
+	ApplicationVersion string            `json:"application_version"`
 	// Duration           int64
 }
 
