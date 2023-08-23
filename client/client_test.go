@@ -8,7 +8,6 @@ import (
 
 	"github.com/oasdiff/telemetry/client"
 	"github.com/oasdiff/telemetry/model"
-	"github.com/oasdiff/telemetry/server"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 )
@@ -46,7 +45,7 @@ func TestSend(t *testing.T) {
 
 		var events map[string][]*model.Telemetry
 		require.NoError(t, json.NewDecoder(r.Body).Decode(&events))
-		telemetry := events[server.KeyEvents][0]
+		telemetry := events[model.KeyEvents][0]
 		require.True(t, telemetry.Time > 0)
 		require.NotEmpty(t, telemetry.MachineId)
 		require.NotEmpty(t, telemetry.Runtime)

@@ -11,6 +11,7 @@ import (
 
 const (
 	Application    = "oasdiff"
+	KeyEvents      = "events"
 	EnvNoTelemetry = "OASDIFF_NO_TELEMETRY"
 	DefaultTimeout = time.Millisecond * 700
 )

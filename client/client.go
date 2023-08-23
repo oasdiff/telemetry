@@ -5,12 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/oasdiff/telemetry/model"
-	"github.com/oasdiff/telemetry/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"golang.org/x/exp/slog"
+)
+
+var (
+	home = &url.URL{
+		Scheme: "https",
+		Host:   fmt.Sprintf("telemetry.%s.com", model.Application),
+	}
 )
 
 type Collector struct {
@@ -19,7 +26,7 @@ type Collector struct {
 
 func NewCollector() *Collector {
 
-	return &Collector{EventsUrl: server.GetEventsUrl()}
+	return &Collector{EventsUrl: home.JoinPath(model.KeyEvents).String()}
 }
 
 func (c *Collector) Send(cmd *cobra.Command) error {
