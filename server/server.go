@@ -23,7 +23,12 @@ var (
 	}
 )
 
-func SetupRouter() *gin.Engine {
+func Run() {
+
+	setupRouter().Run("0.0.0.0:8080")
+}
+
+func setupRouter() *gin.Engine {
 
 	router := gin.Default()
 	router.POST(fmt.Sprintf("/%s", KeyEvents), func(ctx *gin.Context) {
