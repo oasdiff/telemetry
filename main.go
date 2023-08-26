@@ -75,6 +75,7 @@ func setupRouter() *gin.Engine {
 
 		_, err = client.CreateTask(ctx, request)
 		if err != nil {
+			slog.Error("failed to create cloud task", "error", err)
 			ctx.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
