@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
@@ -71,7 +70,15 @@ func setupRouter() *gin.Engine {
 				},
 			},
 		}
-		request.Task.GetHttpRequest().Body = streamToByte(ctx.Request.Body)
+
+		buf := new(bytes.Buffer)
+		if _, err := buf.ReadFrom(ctx.Request.Body); err != nil {
+			slog.Error("failed to read request body", "error", err)
+			ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		request.Task.GetHttpRequest().Body = buf.Bytes()
+		ctx.Request.Body.Close()
 
 		_, err = client.CreateTask(ctx, request)
 		if err != nil {
@@ -82,11 +89,4 @@ func setupRouter() *gin.Engine {
 	})
 
 	return router
-}
-
-func streamToByte(stream io.Reader) []byte {
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(stream)
-	return buf.Bytes()
 }
