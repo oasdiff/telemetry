@@ -42,6 +42,11 @@ func setupRouter() *gin.Engine {
 
 		body := buf.Bytes()
 		size := len(body)
+		if size == 0 {
+			slog.Info("empty body")
+			ctx.Writer.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		if size > 102400 { // 100KB
 			slog.Info("client sent payload > 100KB", "size", size)
 			ctx.Writer.WriteHeader(http.StatusBadRequest)
