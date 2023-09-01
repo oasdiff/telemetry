@@ -7,10 +7,9 @@ import (
 	"net/http"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
-	taskspb "cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/gin-gonic/gin"
-	"github.com/oasdiff/go-common/env"
 	"github.com/oasdiff/telemetry/model"
+	"github.com/oasdiff/go-common/task"
 	"golang.org/x/exp/slog"
 )
 
@@ -21,7 +20,7 @@ func main() {
 
 func setupRouter() *gin.Engine {
 
-	builder := newTaskBuilder()
+	builder := task.NewTaskBuilder()
 	router := gin.Default()
 	router.POST(fmt.Sprintf("/%s", model.KeyEvents), func(ctx *gin.Context) {
 		client, err := cloudtasks.NewClient(context.Background())
@@ -64,33 +63,4 @@ func setupRouter() *gin.Engine {
 	})
 
 	return router
-}
-
-type taskBuilder struct {
-	requestParent string
-	subscriberUrl string
-}
-
-func newTaskBuilder() *taskBuilder {
-
-	return &taskBuilder{
-		requestParent: fmt.Sprintf("projects/%s/locations/%s/queues/%s", env.GetGCPProject(), env.GetGCPLocation(), env.GetGCPQueue()),
-		subscriberUrl: env.GetTaskSubscriberUrl(),
-	}
-}
-
-func (b *taskBuilder) CreateRequest(body []byte) *taskspb.CreateTaskRequest {
-
-	return &taskspb.CreateTaskRequest{
-		Parent: b.requestParent,
-		Task: &taskspb.Task{
-			MessageType: &taskspb.Task_HttpRequest{
-				HttpRequest: &taskspb.HttpRequest{
-					HttpMethod: taskspb.HttpMethod_POST,
-					Url:        b.subscriberUrl,
-					Body:       body,
-				},
-			},
-		},
-	}
 }
