@@ -139,7 +139,7 @@ func isGitHub(name string) bool {
 
 	res, err := regexp.MatchString(`^https://(.)*githubusercontent.com/`, name)
 	if err != nil {
-		slog.Debug("failed to validate if name is heroku host", err)
+		slog.Debug("failed to validate if name is github host", err)
 		return false
 	}
 
@@ -148,8 +148,13 @@ func isGitHub(name string) bool {
 
 func isSwaggerHub(name string) bool {
 
-	// TODO
-	return false
+	res, err := regexp.MatchString(`^https://(.)*swaggerhub.com/`, name)
+	if err != nil {
+		slog.Debug("failed to validate if name is github host", err)
+		return false
+	}
+
+	return res
 }
 
 func fromCommand(cmd *cobra.Command) *model.Telemetry {
