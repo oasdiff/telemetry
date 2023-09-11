@@ -84,7 +84,7 @@ func getWebCategory(name string) string {
 		return "swaggerhub"
 	} else if isGitHub(name) {
 		return "github"
-	} else if isGCPStorage(name) {
+	} else if isGCS(name) {
 		return "gcs"
 	} else if isS3(name) {
 		return "s3"
@@ -112,7 +112,7 @@ func isHeroku(name string) bool {
 	return res
 }
 
-func isGCPStorage(name string) bool {
+func isGCS(name string) bool {
 
 	res, err := regexp.MatchString(`^https://storage\.cloud\.google\.com/`, name)
 	if err != nil {
@@ -131,16 +131,28 @@ func isS3(name string) bool {
 
 func isAzure(name string) bool {
 
-	// TODO
-	return false
+	res, err := regexp.MatchString(`^https://(.)*azure.com/`, name)
+	if err != nil {
+		slog.Debug("failed to validate if name is azure host", err)
+		return false
+	}
+
+	return res
 }
 
 func isGitHub(name string) bool {
 
 	res, err := regexp.MatchString(`^https://(.)*githubusercontent.com/`, name)
 	if err != nil {
-		slog.Debug("failed to validate if name is github host", err)
+		slog.Debug("failed to validate if name is githubusercontent host", err)
 		return false
+	}
+	if !res {
+		res, err = regexp.MatchString(`^https://(.)*github.com/`, name)
+		if err != nil {
+			slog.Debug("failed to validate if name is github host", err)
+			return false
+		}
 	}
 
 	return res
