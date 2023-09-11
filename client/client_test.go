@@ -54,7 +54,7 @@ func TestSend(t *testing.T) {
 		require.Equal(t, version, telemetry.ApplicationVersion)
 		require.Len(t, telemetry.Args, 2)
 		require.Equal(t, "heroku", telemetry.Args[0])
-		require.Equal(t, "https", telemetry.Args[1])
+		require.Equal(t, "swaggerhub", telemetry.Args[1])
 		require.Len(t, telemetry.Flags, 3)
 		require.Equal(t, "true", telemetry.Flags["composed"])
 		require.Equal(t, "", telemetry.Flags["match-path"])
