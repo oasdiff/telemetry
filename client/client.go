@@ -61,9 +61,9 @@ func redactFlags(telemetry *model.Telemetry) *model.Telemetry {
 
 func redactArgs(telemetry *model.Telemetry) *model.Telemetry {
 
-	for i := 0; i < len(telemetry.Args); i++ {
-		if telemetry.Args[i] != "" {
-			telemetry.Args[i] = getCategory(telemetry.Args[i])
+	for i, arg := range telemetry.Args {
+		if arg != "" {
+			telemetry.Args[i] = getCategory(arg)
 		}
 	}
 
