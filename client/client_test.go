@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/oasdiff/go-common/util"
 	"github.com/oasdiff/telemetry/client"
 	"github.com/oasdiff/telemetry/model"
 	"github.com/spf13/cobra"
@@ -61,7 +62,15 @@ func TestSend(t *testing.T) {
 		require.Equal(t, "7", telemetry.Flags["max-circular-dep"])
 	}))
 
-	c := client.NewCollector()
+	c := client.NewCollector(
+		util.NewStringSet().Add("err-ignore").
+			Add("warn-ignore").
+			Add("match-path").
+			Add("prefix-base").
+			Add("prefix-revision").
+			Add("strip-prefix-base").
+			Add("strip-prefix-revision").
+			Add("filter-extension"))
 	c.EventsUrl = server.URL
 	c.Send(cmd)
 }

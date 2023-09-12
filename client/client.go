@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/oasdiff/go-common/util"
 	"github.com/oasdiff/telemetry/model"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -23,35 +24,32 @@ var (
 )
 
 type Collector struct {
-	EventsUrl string
+	EventsUrl   string
+	ignoreFlags *util.StringSet
 }
 
-func NewCollector() *Collector {
+func NewCollector(ignoreFlags *util.StringSet) *Collector {
 
-	return &Collector{EventsUrl: home.JoinPath(model.KeyEvents).String()}
+	return &Collector{
+		EventsUrl:   home.JoinPath(model.KeyEvents).String(),
+		ignoreFlags: getStringSet(ignoreFlags),
+	}
 }
 
 func (c *Collector) Send(cmd *cobra.Command) error {
 
-	return send(c.EventsUrl, redact(fromCommand(cmd)))
+	return send(c.EventsUrl, redact(fromCommand(cmd), c.ignoreFlags))
 }
 
-func redact(telemetry *model.Telemetry) *model.Telemetry {
+func redact(telemetry *model.Telemetry, ignoreFlags *util.StringSet) *model.Telemetry {
 
-	return redactFlags(redactArgs(telemetry))
+	return redactFlags(redactArgs(telemetry), ignoreFlags)
 }
 
-func redactFlags(telemetry *model.Telemetry) *model.Telemetry {
+func redactFlags(telemetry *model.Telemetry, ignoreFlags *util.StringSet) *model.Telemetry {
 
 	for key := range telemetry.Flags {
-		if key == "err-ignore" ||
-			key == "warn-ignore" ||
-			key == "match-path" ||
-			key == "prefix-base" ||
-			key == "prefix-revision" ||
-			key == "strip-prefix-base" ||
-			key == "strip-prefix-revision" ||
-			key == "filter-extension" {
+		if ignoreFlags.Has(key) {
 			telemetry.Flags[key] = ""
 		}
 	}
@@ -212,4 +210,12 @@ func send(url string, t *model.Telemetry) error {
 	}
 
 	return nil
+}
+
+func getStringSet(ignoreFlags *util.StringSet) *util.StringSet {
+
+	if ignoreFlags == nil {
+		return util.NewStringSet()
+	}
+	return ignoreFlags
 }
