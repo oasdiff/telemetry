@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/cloudtasks v1.12.1
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/gin-gonic/gin v1.9.1
-	github.com/oasdiff/go-common v0.2.14
+	github.com/oasdiff/go-common v0.2.15
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
@@ -25,7 +25,7 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.15.3 // indirect
+	github.com/go-playground/validator/v10 v10.15.4 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

@@ -16,14 +16,8 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-var (
-	home = &url.URL{
-		Scheme: "https",
-		Host:   fmt.Sprintf("telemetry.%s.com", model.Application),
-	}
-)
-
 type Collector struct {
+	httpClient  *http.Client
 	EventsUrl   string
 	ignoreFlags *util.StringSet
 }
@@ -31,14 +25,25 @@ type Collector struct {
 func NewCollector(ignoreFlags *util.StringSet) *Collector {
 
 	return &Collector{
-		EventsUrl:   home.JoinPath(model.KeyEvents).String(),
+		httpClient:  util.CreateHttpClient(),
+		EventsUrl:   getEventsUrl(),
 		ignoreFlags: getStringSet(ignoreFlags),
 	}
 }
 
+func getEventsUrl() string {
+
+	home := &url.URL{
+		Scheme: "https",
+		Host:   fmt.Sprintf("telemetry.%s.com", model.Application),
+	}
+
+	return home.JoinPath(model.KeyEvents).String()
+}
+
 func (c *Collector) Send(cmd *cobra.Command) error {
 
-	return send(c.EventsUrl, redact(fromCommand(cmd), c.ignoreFlags))
+	return send(c.httpClient, c.EventsUrl, redact(fromCommand(cmd), c.ignoreFlags))
 }
 
 func redact(telemetry *model.Telemetry, ignoreFlags *util.StringSet) *model.Telemetry {
@@ -188,7 +193,7 @@ func fromCommand(cmd *cobra.Command) *model.Telemetry {
 		cmd.Version, subCommandName, args, flagNameToValue)
 }
 
-func send(url string, t *model.Telemetry) error {
+func send(httpClient *http.Client, url string, t *model.Telemetry) error {
 
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(map[string][]*model.Telemetry{"events": {t}})
@@ -197,7 +202,7 @@ func send(url string, t *model.Telemetry) error {
 		return err
 	}
 
-	response, err := http.Post(url, "application/json", &buf)
+	response, err := httpClient.Post(url, "application/json", &buf)
 	if err != nil {
 		slog.Debug("failed to send telemetry", "error", err)
 		return err
