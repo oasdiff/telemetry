@@ -50,7 +50,7 @@ func redactFlags(telemetry *model.Telemetry, ignoreFlags *util.StringSet) *model
 
 	for key := range telemetry.Flags {
 		if ignoreFlags.Has(key) {
-			telemetry.Flags[key] = ""
+			telemetry.Flags[key] = "[redacted]"
 		}
 	}
 
