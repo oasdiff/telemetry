@@ -58,7 +58,7 @@ func TestSend(t *testing.T) {
 		require.Equal(t, "swaggerhub", telemetry.Args[1])
 		require.Len(t, telemetry.Flags, 3)
 		require.Equal(t, "true", telemetry.Flags["composed"])
-		require.Equal(t, "", telemetry.Flags["match-path"])
+		require.Equal(t, "[redacted]", telemetry.Flags["match-path"])
 		require.Equal(t, "7", telemetry.Flags["max-circular-dep"])
 	}))
 
