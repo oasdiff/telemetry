@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/oasdiff/go-common/util"
 	"github.com/oasdiff/telemetry/client"
 	"github.com/oasdiff/telemetry/model"
 	"github.com/spf13/cobra"
@@ -36,7 +37,7 @@ func TestSend(t *testing.T) {
 		Short: "OpenAPI specification diff",
 	}
 	cmd.Version = version
-	cmd.SetArgs([]string{subCommand, "data/openapi-test1.yaml", "data/openapi-test3.yaml", "--composed"})
+	cmd.SetArgs([]string{subCommand, "https://aerial-data-production.herokuapp.com/bank/api/openapi3.json", "https://app.swaggerhub.com/apis/g4/Banking/1.7.56", "--composed", "--max-circular-dep", "7", "--match-path", "a/b/c"})
 	cmd.AddCommand(getDiffCmd())
 	require.NoError(t, cmd.Execute())
 
@@ -53,11 +54,23 @@ func TestSend(t *testing.T) {
 		require.Equal(t, subCommand, telemetry.Command)
 		require.Equal(t, version, telemetry.ApplicationVersion)
 		require.Len(t, telemetry.Args, 2)
-		require.Len(t, telemetry.Flags, 1)
+		require.Equal(t, "heroku", telemetry.Args[0])
+		require.Equal(t, "swaggerhub", telemetry.Args[1])
+		require.Len(t, telemetry.Flags, 3)
 		require.Equal(t, "true", telemetry.Flags["composed"])
+		require.Equal(t, "", telemetry.Flags["match-path"])
+		require.Equal(t, "7", telemetry.Flags["max-circular-dep"])
 	}))
 
-	c := client.NewCollector()
+	c := client.NewCollector(
+		util.NewStringSet().Add("err-ignore").
+			Add("warn-ignore").
+			Add("match-path").
+			Add("prefix-base").
+			Add("prefix-revision").
+			Add("strip-prefix-base").
+			Add("strip-prefix-revision").
+			Add("filter-extension"))
 	c.EventsUrl = server.URL
 	c.Send(cmd)
 }
@@ -92,39 +105,6 @@ In 'composed' mode, base and revision can be a glob and oasdiff will compare mat
 	cmd.PersistentFlags().StringVarP(&flags.stripPrefixRevision, "strip-prefix-revision", "", "", "strip this prefix from paths in revised-spec before comparison")
 	cmd.PersistentFlags().BoolVarP(&flags.includePathParams, "include-path-params", "", false, "include path parameter names in endpoint matching")
 	cmd.PersistentFlags().BoolVarP(&flags.failOnDiff, "fail-on-diff", "o", false, "exit with return code 1 when any change is found")
-
-	return &cmd
-}
-
-func getSummaryCmd() *cobra.Command {
-	flags := DiffFlags{}
-
-	cmd := cobra.Command{
-		Use:   "summary base revision [flags]",
-		Short: "Generate a diff summary",
-		Long: `Display a summary of changes between base and revision specs.
-Base and revision can be a path to a file or a URL.
-In 'composed' mode, base and revision can be a glob and oasdiff will compare mathcing endpoints between the two sets of files.
-`,
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			flags.base = args[0]
-			flags.revision = args[1]
-			cmd.Root().SilenceUsage = true
-			return nil
-		},
-	}
-
-	cmd.PersistentFlags().BoolVarP(&flags.composed, "composed", "c", false, "work in 'composed' mode, compare paths in all specs matching base and revision globs")
-	cmd.PersistentFlags().StringVarP(&flags.matchPath, "match-path", "p", "", "include only paths that match this regular expression")
-	cmd.PersistentFlags().StringVarP(&flags.filterExtension, "filter-extension", "", "", "exclude paths and operations with an OpenAPI Extension matching this regular expression")
-	cmd.PersistentFlags().IntVarP(&flags.circularReferenceCounter, "max-circular-dep", "", 5, "maximum allowed number of circular dependencies between objects in OpenAPI specs")
-	cmd.PersistentFlags().StringVarP(&flags.prefixBase, "prefix-base", "", "", "add this prefix to paths in base-spec before comparison")
-	cmd.PersistentFlags().StringVarP(&flags.prefixRevision, "prefix-revision", "", "", "add this prefix to paths in revised-spec before comparison")
-	cmd.PersistentFlags().StringVarP(&flags.stripPrefixBase, "strip-prefix-base", "", "", "strip this prefix from paths in base-spec before comparison")
-	cmd.PersistentFlags().StringVarP(&flags.stripPrefixRevision, "strip-prefix-revision", "", "", "strip this prefix from paths in revised-spec before comparison")
-	cmd.PersistentFlags().BoolVarP(&flags.includePathParams, "include-path-params", "", false, "include path parameter names in endpoint matching")
-	cmd.PersistentFlags().BoolVarP(&flags.failOnDiff, "fail-on-diff", "", false, "exit with return code 1 when any change is found")
 
 	return &cmd
 }
