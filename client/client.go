@@ -16,13 +16,6 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-var (
-	home = &url.URL{
-		Scheme: "https",
-		Host:   fmt.Sprintf("telemetry.%s.com", model.Application),
-	}
-)
-
 type Collector struct {
 	EventsUrl   string
 	ignoreFlags *util.StringSet
@@ -31,9 +24,19 @@ type Collector struct {
 func NewCollector(ignoreFlags *util.StringSet) *Collector {
 
 	return &Collector{
-		EventsUrl:   home.JoinPath(model.KeyEvents).String(),
+		EventsUrl:   getEventsUrl(),
 		ignoreFlags: getStringSet(ignoreFlags),
 	}
+}
+
+func getEventsUrl() string {
+
+	home := &url.URL{
+		Scheme: "https",
+		Host:   fmt.Sprintf("telemetry.%s.com", model.Application),
+	}
+
+	return home.JoinPath(model.KeyEvents).String()
 }
 
 func (c *Collector) Send(cmd *cobra.Command) error {
