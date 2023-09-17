@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/oasdiff/go-common/util"
 	"github.com/oasdiff/telemetry/client"
@@ -47,7 +48,7 @@ func TestSend(t *testing.T) {
 		var events map[string][]*model.Telemetry
 		require.NoError(t, json.NewDecoder(r.Body).Decode(&events))
 		telemetry := events[model.KeyEvents][0]
-		require.True(t, telemetry.Time > 0)
+		require.True(t, time.Now().UnixMilli() - telemetry.Time.UnixMilli() < 100000)
 		require.NotEmpty(t, telemetry.MachineId)
 		require.NotEmpty(t, telemetry.Runtime)
 		require.NotEmpty(t, telemetry.Platform)

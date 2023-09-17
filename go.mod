@@ -1,12 +1,12 @@
 module github.com/oasdiff/telemetry
 
-go 1.21.1
+go 1.21
 
 require (
 	cloud.google.com/go/cloudtasks v1.12.1
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/gin-gonic/gin v1.9.1
-	github.com/oasdiff/go-common v0.2.16
+	github.com/oasdiff/go-common v0.2.18
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4

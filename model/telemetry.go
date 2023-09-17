@@ -18,7 +18,7 @@ const (
 
 type Telemetry struct {
 	Id                 string            `json:"id"`
-	Time               int64             `json:"time"`
+	Time               time.Time         `json:"time"`
 	MachineId          string            `json:"machine_id"`
 	Runtime            string            `json:"runtime"`  // darwin/windows
 	Platform           string            `json:"platform"` // docker/github-action
@@ -39,7 +39,7 @@ func NewTelemetry(app string, appVersion string, cmd string, args []string, flag
 	}
 
 	return &Telemetry{
-		Time:               time.Now().UnixMilli(),
+		Time:               time.Now(),
 		Application:        app,
 		ApplicationVersion: appVersion,
 		MachineId:          machineId,
