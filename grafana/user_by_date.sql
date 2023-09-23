@@ -1,0 +1,5 @@
+SELECT DATE(time) AS date, COUNT(DISTINCT machine_id) AS calls
+FROM `oasdiff.dev.telemetry`
+WHERE time BETWEEN DATETIME("2023-08-29") AND DATETIME_ADD("2023-08-29", INTERVAL 40 DAY) 
+GROUP BY date
+ORDER BY date;
