@@ -21,6 +21,19 @@ type Collector struct {
 	ignoreFlags *util.StringSet
 }
 
+func NewDefaultCollector() *Collector {
+
+	return NewCollector(
+		util.NewStringSet().Add("err-ignore").
+			Add("warn-ignore").
+			Add("match-path").
+			Add("prefix-base").
+			Add("prefix-revision").
+			Add("strip-prefix-base").
+			Add("strip-prefix-revision").
+			Add("filter-extension"))
+}
+
 func NewCollector(ignoreFlags *util.StringSet) *Collector {
 
 	return &Collector{
@@ -39,9 +52,14 @@ func getEventsUrl() string {
 	return home.JoinPath(model.KeyEvents).String()
 }
 
-func (c *Collector) Send(cmd *cobra.Command) error {
+func (c *Collector) SendCommand(cmd *cobra.Command) error {
 
-	return send(c.EventsUrl, redact(fromCommand(cmd), c.ignoreFlags))
+	return c.Send(fromCommand(cmd))
+}
+
+func (c *Collector) Send(t *model.Telemetry) error {
+
+	return send(c.EventsUrl, redact(t, c.ignoreFlags))
 }
 
 func redact(telemetry *model.Telemetry, ignoreFlags *util.StringSet) *model.Telemetry {

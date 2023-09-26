@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/oasdiff/go-common/util"
 	"github.com/oasdiff/telemetry/client"
 	"github.com/oasdiff/telemetry/model"
 	"github.com/spf13/cobra"
@@ -48,7 +47,7 @@ func TestSend(t *testing.T) {
 		var events map[string][]*model.Telemetry
 		require.NoError(t, json.NewDecoder(r.Body).Decode(&events))
 		telemetry := events[model.KeyEvents][0]
-		require.True(t, time.Now().UnixMilli() - telemetry.Time.UnixMilli() < 100000)
+		require.True(t, time.Now().UnixMilli()-telemetry.Time.UnixMilli() < 100000)
 		require.NotEmpty(t, telemetry.MachineId)
 		require.NotEmpty(t, telemetry.Runtime)
 		require.NotEmpty(t, telemetry.Platform)
@@ -63,17 +62,9 @@ func TestSend(t *testing.T) {
 		require.Equal(t, "7", telemetry.Flags["max-circular-dep"])
 	}))
 
-	c := client.NewCollector(
-		util.NewStringSet().Add("err-ignore").
-			Add("warn-ignore").
-			Add("match-path").
-			Add("prefix-base").
-			Add("prefix-revision").
-			Add("strip-prefix-base").
-			Add("strip-prefix-revision").
-			Add("filter-extension"))
+	c := client.NewDefaultCollector()
 	c.EventsUrl = server.URL
-	c.Send(cmd)
+	c.SendCommand(cmd)
 }
 
 func getDiffCmd() *cobra.Command {
