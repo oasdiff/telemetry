@@ -30,7 +30,7 @@ type Telemetry struct {
 	// Duration           int64
 }
 
-func NewTelemetry(app string, appVersion string, cmd string, args []string, flags map[string]string) *Telemetry {
+func NewDefaultTelemetry(app string, appVersion string, cmd string, args []string, flags map[string]string) *Telemetry {
 
 	machineId, err := machine.ProtectedID(app)
 	if err != nil {
@@ -38,13 +38,19 @@ func NewTelemetry(app string, appVersion string, cmd string, args []string, flag
 		machineId = "na"
 	}
 
+	return NewTelemetry(app, appVersion, cmd, args, flags, machineId, getPlatform())
+}
+
+func NewTelemetry(app string, appVersion string, cmd string, args []string, flags map[string]string,
+	machineId string, platform string) *Telemetry {
+
 	return &Telemetry{
 		Time:               time.Now(),
 		Application:        app,
 		ApplicationVersion: appVersion,
 		MachineId:          machineId,
 		Runtime:            runtime.GOOS,
-		Platform:           getPlatform(),
+		Platform:           platform,
 		Command:            cmd,
 		Args:               args,
 		Flags:              flags,

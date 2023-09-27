@@ -205,7 +205,7 @@ func fromCommand(cmd *cobra.Command) *model.Telemetry {
 		}
 	}
 
-	return model.NewTelemetry(fmt.Sprintf("%s-cli", model.Application),
+	return model.NewDefaultTelemetry(fmt.Sprintf("%s-cli", model.Application),
 		cmd.Version, subCommandName, args, flagNameToValue)
 }
 
