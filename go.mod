@@ -1,8 +1,6 @@
 module github.com/oasdiff/telemetry
 
-go 1.21.2
-
-toolchain go1.21.3
+go 1.21.3
 
 require (
 	cloud.google.com/go/cloudtasks v1.12.2
