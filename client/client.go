@@ -190,23 +190,13 @@ func isSwaggerHub(name string) bool {
 
 func fromCommand(cmd *cobra.Command) *model.Telemetry {
 
-	subCommandName := ""
-	args := []string{}
 	flagNameToValue := make(map[string]string)
-
-	for _, currSubCommand := range cmd.Commands() {
-		subCommandName = currSubCommand.CalledAs()
-		if subCommandName != "" {
-			currSubCommand.Flags().Visit(func(flag *pflag.Flag) {
-				flagNameToValue[flag.Name] = flag.Value.String()
-			})
-			args = currSubCommand.Flags().Args()
-			break
-		}
-	}
+	cmd.Flags().Visit(func(flag *pflag.Flag) {
+		flagNameToValue[flag.Name] = flag.Value.String()
+	})
 
 	return model.NewDefaultTelemetry(fmt.Sprintf("%s-cli", model.Application),
-		cmd.Version, subCommandName, args, flagNameToValue)
+		cmd.Version, cmd.CalledAs(), cmd.Flags().Args(), flagNameToValue)
 }
 
 func send(url string, t *model.Telemetry) error {
