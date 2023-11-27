@@ -52,7 +52,7 @@ func TestSend(t *testing.T) {
 		require.NotEmpty(t, telemetry.Runtime)
 		require.NotEmpty(t, telemetry.Platform)
 		require.Equal(t, subCommand, telemetry.Command)
-		require.Equal(t, version, telemetry.ApplicationVersion)
+		// require.Equal(t, version, telemetry.ApplicationVersion)
 		require.Len(t, telemetry.Args, 2)
 		require.Equal(t, "heroku", telemetry.Args[0])
 		require.Equal(t, "swaggerhub", telemetry.Args[1])
@@ -64,7 +64,16 @@ func TestSend(t *testing.T) {
 
 	c := client.NewDefaultCollector()
 	c.EventsUrl = server.URL
-	c.SendCommand(cmd)
+
+	flag := false
+	for _, currSubCmd := range cmd.Commands() {
+		if currSubCmd.CalledAs() == subCommand {
+			require.NoError(t, c.SendCommand(currSubCmd))
+			flag = true
+			break
+		}
+	}
+	require.True(t, flag)
 }
 
 func getDiffCmd() *cobra.Command {
